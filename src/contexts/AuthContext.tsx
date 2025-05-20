@@ -13,6 +13,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   isAuthenticated: boolean;
   isLoading: boolean;
+  needsEmailVerification: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,6 +23,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [needsEmailVerification, setNeedsEmailVerification] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -122,16 +124,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         });
         
         // Check if email confirmation is required
-        if (data.session) {
-          // User is already signed in, redirect to profile
-          navigate('/my-profile');
-        } else {
+        if (!data.session) {
           // Email confirmation required
+          setNeedsEmailVerification(true);
           toast({
             title: "Verification required",
             description: "Please check your email to verify your account.",
           });
         }
+        
+        // Regardless of email verification status, navigate to profile page
+        navigate('/my-profile');
       }
       
       return { success: true };
@@ -199,7 +202,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         signup,
         logout, 
         isAuthenticated: !!user,
-        isLoading: isLoading || isLoggingOut
+        isLoading: isLoading || isLoggingOut,
+        needsEmailVerification
       }}
     >
       {children}

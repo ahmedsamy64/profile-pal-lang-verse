@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,6 +15,7 @@ import {
 } from '@/components/ui/select';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import EmailVerificationAlert from '@/components/EmailVerificationAlert';
 
 type VibeType = 'techie' | 'artist' | 'explorer';
 type ColorSchemeType = 'neonSunset' | 'forestGreens' | 'oceanBlues';
@@ -41,7 +41,7 @@ const vibeIcons: Record<VibeType, string> = {
 
 const Profile = () => {
   const { t, dir } = useLanguage();
-  const { user } = useAuth();
+  const { user, needsEmailVerification } = useAuth();
   
   const [isLoading, setIsLoading] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData>({
@@ -181,6 +181,10 @@ const Profile = () => {
   
   return (
     <div className="container px-4 py-8 mx-auto" dir={dir}>
+      {needsEmailVerification && (
+        <EmailVerificationAlert email={user?.email} />
+      )}
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Profile Form */}
         <div>
