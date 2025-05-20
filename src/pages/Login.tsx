@@ -53,14 +53,14 @@ const Login = () => {
     
     try {
       if (isSignUp) {
-        // Handle signup
+        // Handle signup - the navigation is handled in the AuthContext
         const { success, error: signupError } = await signup(email, password);
         
         if (!success) {
           throw new Error(signupError || getText('error.signup'));
         }
         
-        // No need to navigate here as it's handled in the signup function
+        // No need to navigate here as it's handled in the AuthContext
         setError('');
       } else {
         // Handle sign in
