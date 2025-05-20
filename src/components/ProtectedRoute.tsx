@@ -23,7 +23,6 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
   
-  // Check if user is authenticated using the updated isAuthenticated value
   if (!isAuthenticated) {
     toast({
       title: t("login.required"),

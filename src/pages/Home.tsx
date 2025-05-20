@@ -34,7 +34,7 @@ const Home = () => {
               </div>
               <h3 className="text-lg font-semibold mb-2">{t('home.feature1')}</h3>
               <p className="text-muted-foreground">
-                {t('home.featureDesc1')}
+                Customize your profile with different themes and color schemes that match your personality.
               </p>
             </CardContent>
           </Card>
@@ -46,7 +46,7 @@ const Home = () => {
               </div>
               <h3 className="text-lg font-semibold mb-2">{t('home.feature2')}</h3>
               <p className="text-muted-foreground">
-                {t('home.featureDesc2')}
+                Create a personalized profile that represents who you are and what you love.
               </p>
             </CardContent>
           </Card>
@@ -58,7 +58,7 @@ const Home = () => {
               </div>
               <h3 className="text-lg font-semibold mb-2">{t('home.feature3')}</h3>
               <p className="text-muted-foreground">
-                {t('home.featureDesc3')}
+                Use the app in your preferred language with complete RTL support for Arabic.
               </p>
             </CardContent>
           </Card>

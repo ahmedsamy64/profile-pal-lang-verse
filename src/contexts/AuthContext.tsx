@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -23,9 +24,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  
-  // This flag ensures users can access protected routes immediately after signup
-  const [forceAuthenticated, setForceAuthenticated] = useState(false);
   
   useEffect(() => {
     // First check for existing session
@@ -61,13 +59,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setIsLoading(false);
         
         if (event === 'SIGNED_IN') {
-          setForceAuthenticated(true); // Set force authenticated flag
           toast({
             title: "Login successful",
             description: `Welcome back!`,
           });
         } else if (event === 'SIGNED_OUT') {
-          setForceAuthenticated(false); // Reset force authenticated flag
           toast({
             title: "Logged out",
             description: "You have been successfully logged out.",
@@ -94,60 +90,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         password,
       });
       
-      if (error) {
-        // Special handling for "Email not confirmed" error
-        if (error.message.includes('Email not confirmed')) {
-          console.log('Email not confirmed, but allowing login anyway');
-          
-          // Attempt to get the user by email
-          const { data: userData, error: userError } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              emailRedirectTo: window.location.origin,
-            }
-          });
-          
-          if (userError) {
-            if (userError.message.includes('User already registered')) {
-              // This confirms the user exists but just needs verification
-              // Force set authenticated state
-              setForceAuthenticated(true);
-              
-              // Set user data manually
-              const tempUser = {
-                id: 'temp-' + Date.now(),
-                email: email,
-                app_metadata: {},
-                user_metadata: {},
-                aud: 'authenticated',
-                created_at: new Date().toISOString(),
-              } as User;
-              
-              setUser(tempUser);
-              
-              toast({
-                title: "Login successful",
-                description: "Email verification pending, but you can use the app now.",
-              });
-              
-              return true;
-            }
-            throw userError;
-          }
-          
-          if (userData.user) {
-            setUser(userData.user);
-            if (userData.session) {
-              setSession(userData.session);
-            }
-            setForceAuthenticated(true);
-            return true;
-          }
-        }
-        
-        throw error;
-      }
+      if (error) throw error;
       
       return true;
     } catch (error) {
@@ -171,27 +114,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { success: false, error: error.message };
       }
       
-      // Success - Force authentication whether or not email verification is required
+      // Success - Navigate to profile page if user signed up successfully
       if (data.user) {
-        // Set user state manually
-        setUser(data.user);
-        if (data.session) {
-          setSession(data.session);
-        }
-        
-        // Force authentication to true regardless of session/email verification
-        setForceAuthenticated(true);
-        
         toast({
           title: "Signup successful",
-          description: data.session 
-            ? "Your account has been created." 
-            : "Your account has been created. Please check your email to verify your account.",
+          description: "Your account has been created.",
         });
         
-        // Always redirect to profile page after signup
-        console.log("Redirecting to profile after signup");
-        navigate('/my-profile');
+        // Check if email confirmation is required
+        if (data.session) {
+          // User is already signed in, redirect to profile
+          navigate('/my-profile');
+        } else {
+          // Email confirmation required
+          toast({
+            title: "Verification required",
+            description: "Please check your email to verify your account.",
+          });
+        }
       }
       
       return { success: true };
@@ -258,7 +198,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         login,
         signup,
         logout, 
-        isAuthenticated: !!user || forceAuthenticated, // Consider authenticated if user exists OR forced auth flag is set
+        isAuthenticated: !!user,
         isLoading: isLoading || isLoggingOut
       }}
     >
