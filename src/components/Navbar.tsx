@@ -12,8 +12,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 const Navbar = () => {
-  const { isAuthenticated, logout, user } = useAuth();
+  const { isAuthenticated, logout, user, isLoading } = useAuth();
   const { language, setLanguage, t } = useLanguage();
+  
+  const handleLogout = async () => {
+    console.log("Logout button clicked");
+    await logout();
+  };
   
   return (
     <nav className="border-b w-full py-4 px-4 sm:px-6 lg:px-8 bg-background">
@@ -40,15 +45,19 @@ const Navbar = () => {
             </DropdownMenuContent>
           </DropdownMenu>
           
-          {isAuthenticated ? (
+          {isLoading ? (
+            <Button variant="ghost" disabled>
+              Loading...
+            </Button>
+          ) : isAuthenticated ? (
             <>
               <Button variant="ghost" asChild>
                 <Link to="/my-profile">
                   <User className="h-4 w-4 mr-2" />
-                  {t('nav.profile')}
+                  {user?.email || t('nav.profile')}
                 </Link>
               </Button>
-              <Button variant="outline" onClick={logout}>
+              <Button variant="outline" onClick={handleLogout}>
                 <LogOut className="h-4 w-4 mr-2" />
                 {t('nav.logout')}
               </Button>

@@ -10,7 +10,7 @@ interface AuthContextType {
   session: Session | null;
   login: (email: string, password: string) => Promise<boolean>;
   signup: (email: string, password: string) => Promise<{success: boolean, error?: string}>;
-  logout: () => void;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
   isLoading: boolean;
 }
@@ -50,8 +50,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         console.log("Auth state changed:", event, session?.user?.email);
+        
         setSession(session);
         setUser(session?.user ?? null);
         setIsLoading(false);
@@ -66,6 +67,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             title: "Logged out",
             description: "You have been successfully logged out.",
           });
+          navigate('/');
         } else if (event === 'USER_UPDATED' || event === 'SIGNED_UP') {
           toast({
             title: "Registration successful",
@@ -78,7 +80,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [toast]);
+  }, [toast, navigate]);
   
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
@@ -101,6 +103,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: window.location.origin,
+        }
       });
       
       if (error) {
@@ -116,15 +121,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
   
-  const logout = async () => {
+  const logout = async (): Promise<void> => {
     try {
-      await supabase.auth.signOut();
-      navigate('/');
+      console.log("Attempting to logout...");
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('Logout error:', error);
+        toast({
+          title: "Logout failed",
+          description: "There was an issue logging out. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // The navigation and toast will be handled by the onAuthStateChange listener
+      console.log("Logout successful, waiting for auth state change...");
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('Unexpected logout error:', error);
       toast({
         title: "Logout failed",
-        description: "There was an issue logging out. Please try again.",
+        description: "There was an unexpected issue logging out. Please try again.",
         variant: "destructive"
       });
     }
