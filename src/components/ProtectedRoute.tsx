@@ -10,7 +10,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const { t } = useLanguage();
   
   // Show loading state while checking authentication
@@ -23,6 +23,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
   
+  // If we have a user set (even without session), allow access to protected routes
   if (!isAuthenticated) {
     toast({
       title: t("login.required"),

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -70,9 +69,8 @@ const Login = () => {
           throw new Error(getText('error.invalidCredentials'));
         }
         
-        // On successful login
+        // No need for navigation here as the useEffect will handle it
         setError('');
-        navigate('/my-profile');
       }
     } catch (err: any) {
       console.error('Auth error:', err);

@@ -114,23 +114,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { success: false, error: error.message };
       }
       
-      // Success - Navigate to profile page if user signed up successfully
+      // Success - Set user and session manually immediately after signup
       if (data.user) {
-        toast({
-          title: "Signup successful",
-          description: "Your account has been created.",
-        });
-        
-        // Check if email confirmation is required
+        // If a session is returned, set it (happens when email confirmation is not required)
         if (data.session) {
-          // User is already signed in, redirect to profile
+          setSession(data.session);
+          setUser(data.user);
+          
+          toast({
+            title: "Signup successful",
+            description: "Your account has been created.",
+          });
+          
+          // Redirect to profile page
           navigate('/my-profile');
         } else {
-          // Email confirmation required
+          // Even if email verification is required, we'll still set the user state
+          // to avoid the protected route redirecting back to login
+          setUser(data.user);
+          
           toast({
             title: "Verification required",
-            description: "Please check your email to verify your account.",
+            description: "Please check your email to verify your account. However, you can start using the app now.",
           });
+          
+          // Redirect to profile page
+          navigate('/my-profile');
         }
       }
       
@@ -198,7 +207,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         login,
         signup,
         logout, 
-        isAuthenticated: !!user,
+        isAuthenticated: !!user, // This ensures we consider a user authenticated as long as user state is set
         isLoading: isLoading || isLoggingOut
       }}
     >
