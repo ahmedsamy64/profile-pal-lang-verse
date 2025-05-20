@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
@@ -20,17 +20,13 @@ const Login = () => {
   const { login, signup, isAuthenticated, isLoading: authLoading } = useAuth();
   const { t, dir, language } = useLanguage();
   const navigate = useNavigate();
-  const location = useLocation();
-  
-  // Get the intended destination from location state, or default to '/my-profile'
-  const from = location.state?.from || '/my-profile';
   
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated && !authLoading) {
-      navigate(from);
+      navigate('/my-profile');
     }
-  }, [isAuthenticated, authLoading, navigate, from]);
+  }, [isAuthenticated, authLoading, navigate]);
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,13 +53,15 @@ const Login = () => {
     
     try {
       if (isSignUp) {
-        // Handle signup - the navigation is now handled in AuthContext
+        // Handle signup
         const { success, error: signupError } = await signup(email, password);
         
         if (!success) {
           throw new Error(signupError || getText('error.signup'));
         }
-        // No navigation needed here - handled in signup function
+        
+        // No need to navigate here as it's handled in the signup function
+        setError('');
       } else {
         // Handle sign in
         const success = await login(email, password);
@@ -74,7 +72,7 @@ const Login = () => {
         
         // On successful login
         setError('');
-        // Navigate is handled by the useEffect above
+        navigate('/my-profile');
       }
     } catch (err: any) {
       console.error('Auth error:', err);
