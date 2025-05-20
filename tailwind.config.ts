@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,7 +62,39 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+        // Theme-specific color schemes
+        techie: {
+          primary: '#9b87f5',
+          secondary: '#6E59A5',
+          accent: '#1A1F2C',
+        },
+        artist: {
+          primary: '#D946EF',
+          secondary: '#8B5CF6',
+          accent: '#F97316',
+        },
+        explorer: {
+          primary: '#0EA5E9',
+          secondary: '#33C3F0',
+          accent: '#F2FCE2',
+        },
+        // Color schemes
+        neonSunset: {
+          primary: '#FEC6A1',
+          secondary: '#FFDEE2',
+          background: '#1A1F2C',
+        },
+        forestGreens: {
+          primary: '#F2FCE2',
+          secondary: '#6E59A5',
+          background: '#222222',
+        },
+        oceanBlues: {
+          primary: '#D3E4FD',
+          secondary: '#0EA5E9',
+          background: '#1A1F2C',
+        },
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
