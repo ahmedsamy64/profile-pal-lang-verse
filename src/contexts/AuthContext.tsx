@@ -114,27 +114,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { success: false, error: error.message };
       }
       
-      // Success - Navigate to profile page if user signed up successfully
+      // Success - Always treat signup as successful if we have a user
       if (data.user) {
-        toast({
-          title: "Signup successful",
-          description: "Your account has been created.",
-        });
-        
-        // Check if email confirmation is required
-        if (data.session) {
-          // User is already signed in, redirect to profile
-          navigate('/my-profile');
-        } else {
-          // Email confirmation required
+        if (!data.session) {
+          // Email verification is required, but we'll still navigate to profile
+          // and notify the user about verification
           toast({
-            title: "Verification required",
-            description: "Please check your email to verify your account.",
+            title: "Account created",
+            description: "Please verify your email to access all features.",
+          });
+        } else {
+          toast({
+            title: "Signup successful",
+            description: "Your account has been created.",
           });
         }
+        
+        // Always navigate to profile, regardless of verification status
+        navigate('/my-profile');
+        return { success: true };
       }
       
-      return { success: true };
+      return { success: false, error: "Failed to create user" };
     } catch (error: any) {
       console.error('Signup error:', error);
       return { success: false, error: error.message };
