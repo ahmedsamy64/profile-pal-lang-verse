@@ -58,9 +58,6 @@ const Login = () => {
         if (!success) {
           throw new Error(signupError || getText('error.signup'));
         }
-        
-        // No need to navigate here as it's handled in the signup function
-        setError('');
       } else {
         // Handle sign in
         const success = await login(email, password);
@@ -68,9 +65,6 @@ const Login = () => {
         if (!success) {
           throw new Error(getText('error.invalidCredentials'));
         }
-        
-        // No need for navigation here as the useEffect will handle it
-        setError('');
       }
     } catch (err: any) {
       console.error('Auth error:', err);

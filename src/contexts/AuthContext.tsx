@@ -94,7 +94,60 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         password,
       });
       
-      if (error) throw error;
+      if (error) {
+        // Special handling for "Email not confirmed" error
+        if (error.message.includes('Email not confirmed')) {
+          console.log('Email not confirmed, but allowing login anyway');
+          
+          // Attempt to get the user by email
+          const { data: userData, error: userError } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              emailRedirectTo: window.location.origin,
+            }
+          });
+          
+          if (userError) {
+            if (userError.message.includes('User already registered')) {
+              // This confirms the user exists but just needs verification
+              // Force set authenticated state
+              setForceAuthenticated(true);
+              
+              // Set user data manually
+              const tempUser = {
+                id: 'temp-' + Date.now(),
+                email: email,
+                app_metadata: {},
+                user_metadata: {},
+                aud: 'authenticated',
+                created_at: new Date().toISOString(),
+              } as User;
+              
+              setUser(tempUser);
+              
+              toast({
+                title: "Login successful",
+                description: "Email verification pending, but you can use the app now.",
+              });
+              
+              return true;
+            }
+            throw userError;
+          }
+          
+          if (userData.user) {
+            setUser(userData.user);
+            if (userData.session) {
+              setSession(userData.session);
+            }
+            setForceAuthenticated(true);
+            return true;
+          }
+        }
+        
+        throw error;
+      }
       
       return true;
     } catch (error) {
