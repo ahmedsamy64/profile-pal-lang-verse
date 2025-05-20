@@ -93,6 +93,11 @@ const enTranslations: Record<string, string> = {
   "error.serverError": "Server error. Please try again later",
   "error.networkError": "Network error. Please check your connection",
   "error.unknownError": "An unknown error occurred",
+  
+  // NotFound Page
+  "notFound.message": "Page not found",
+  "notFound.description": "We couldn't find the page you were looking for.",
+  "notFound.backToHome": "Back to home"
 };
 
 // Arabic translations
@@ -179,6 +184,11 @@ const arTranslations: Record<string, string> = {
   "error.serverError": "خطأ في الخادم. يرجى المحاولة مرة أخرى لاحقًا",
   "error.networkError": "خطأ في الشبكة. يرجى التحقق من اتصالك",
   "error.unknownError": "حدث خطأ غير معروف",
+  
+  // NotFound Page
+  "notFound.message": "الصفحة غير موجودة",
+  "notFound.description": "لم نتمكن من العثور على الصفحة التي تبحث عنها.",
+  "notFound.backToHome": "العودة إلى الصفحة الرئيسية"
 };
 
 const translations: Record<Language, Record<string, string>> = {

@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -16,6 +17,7 @@ import {
 } from '@/components/ui/select';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { UserCheck, Save, Palette, UserIcon, RefreshCw } from 'lucide-react';
 
 type VibeType = 'techie' | 'artist' | 'explorer';
 type ColorSchemeType = 'neonSunset' | 'forestGreens' | 'oceanBlues';
@@ -40,8 +42,8 @@ const vibeIcons: Record<VibeType, string> = {
 };
 
 const Profile = () => {
-  const { t, dir } = useLanguage();
-  const { user } = useAuth();
+  const { t, dir, language } = useLanguage();
+  const { user, isAuthenticated } = useAuth();
   
   const [isLoading, setIsLoading] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData>({
@@ -180,18 +182,61 @@ const Profile = () => {
   const themeStyles = getThemeStyles();
   
   return (
-    <div className="container px-4 py-8 mx-auto" dir={dir}>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div className="container px-4 py-8 mx-auto max-w-7xl" dir={dir}>
+      {/* Authentication Status Banner */}
+      <div className="mb-8">
+        <Card className={`overflow-hidden transition-all border-0 shadow-md ${isAuthenticated ? 'bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20' : 'bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20'}`}>
+          <CardContent className="p-5 flex items-center gap-3">
+            <div className={`rounded-full flex items-center justify-center h-10 w-10 ${isAuthenticated ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'}`}>
+              <UserCheck className="h-5 w-5" />
+            </div>
+            <div className="flex-1">
+              {isAuthenticated ? (
+                <>
+                  <p className="font-medium text-lg">
+                    {t('profile.authenticatedAs')}:
+                    <span className="ml-1 font-semibold">{user?.email}</span>
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {user?.email_confirmed_at 
+                      ? t('profile.emailVerified') 
+                      : t('profile.emailNotVerified')}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="font-medium text-lg">
+                    {t('profile.notAuthenticated')}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {t('error.loginRequired')}
+                  </p>
+                </>
+              )}
+            </div>
+            <Badge variant="outline" className={`ml-auto py-1.5 px-3 ${isAuthenticated ? 'bg-green-100 text-green-800 dark:bg-green-800/40 dark:text-green-200 border-green-200 dark:border-green-700' : 'bg-amber-100 text-amber-800 dark:bg-amber-800/40 dark:text-amber-200 border-amber-200 dark:border-amber-700'}`}>
+              {isAuthenticated ? t('profile.authenticated') : t('profile.guest')}
+            </Badge>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Profile Form */}
         <div>
-          <Card>
+          <Card className="shadow-md border border-border/40 overflow-hidden">
+            <div className="h-2 bg-gradient-to-r from-primary/80 to-indigo-500"></div>
             <CardHeader>
-              <CardTitle>{t('profile.title')}</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <UserIcon className="h-5 w-5 text-primary" />
+                {t('profile.title')}
+              </CardTitle>
+              <CardDescription>{t('profile.description')}</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="name">{t('profile.name')}</Label>
+                  <Label htmlFor="name" className="text-sm font-medium">{t('profile.name')}</Label>
                   <Input
                     id="name"
                     name="name"
@@ -200,16 +245,18 @@ const Profile = () => {
                     placeholder={t('profile.namePlaceholder')}
                     required
                     dir={dir}
+                    className="input-focus-ring"
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="vibe">{t('profile.vibe')}</Label>
+                  <Label htmlFor="vibe" className="text-sm font-medium">{t('profile.vibe')}</Label>
                   <Select
                     value={profileData.vibe}
                     onValueChange={(value) => handleSelectChange('vibe', value)}
+                    dir={dir}
                   >
-                    <SelectTrigger id="vibe" dir={dir}>
+                    <SelectTrigger id="vibe" className="input-focus-ring">
                       <SelectValue placeholder={t('profile.vibe')} />
                     </SelectTrigger>
                     <SelectContent dir={dir}>
@@ -221,12 +268,13 @@ const Profile = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="colorScheme">{t('profile.colorScheme')}</Label>
+                  <Label htmlFor="colorScheme" className="text-sm font-medium">{t('profile.colorScheme')}</Label>
                   <Select
                     value={profileData.colorScheme}
                     onValueChange={(value) => handleSelectChange('colorScheme', value)}
+                    dir={dir}
                   >
-                    <SelectTrigger id="colorScheme" dir={dir}>
+                    <SelectTrigger id="colorScheme" className="input-focus-ring">
                       <SelectValue placeholder={t('profile.colorScheme')} />
                     </SelectTrigger>
                     <SelectContent dir={dir}>
@@ -238,7 +286,7 @@ const Profile = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="bio">{t('profile.bio')}</Label>
+                  <Label htmlFor="bio" className="text-sm font-medium">{t('profile.bio')}</Label>
                   <Textarea
                     id="bio"
                     name="bio"
@@ -247,11 +295,20 @@ const Profile = () => {
                     placeholder={t('profile.bioPlaceholder')}
                     rows={4}
                     dir={dir}
+                    className="resize-none input-focus-ring"
                   />
                 </div>
                 
-                <Button type="submit" disabled={isLoading} className="w-full">
-                  {isLoading ? t('common.loading') : t('profile.save')}
+                <Button 
+                  type="submit" 
+                  disabled={isLoading}
+                  className="w-full relative overflow-hidden group"
+                >
+                  <span className="absolute inset-0 w-3 bg-gradient-to-r from-primary/0 via-primary/10 to-primary/0 group-hover:animate-[shimmer_1s_ease-in-out_infinite] opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                  <span className="relative flex items-center justify-center gap-2">
+                    {isLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                    {isLoading ? t('common.loading') : t('profile.save')}
+                  </span>
                 </Button>
               </form>
             </CardContent>
@@ -264,27 +321,46 @@ const Profile = () => {
             style={{ 
               backgroundColor: themeStyles.backgroundColor, 
               color: themeStyles.color,
-              borderColor: themeStyles.accent,
-              borderWidth: '2px',
+              boxShadow: `0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 4px 10px -5px rgba(0, 0, 0, 0.1)`
             }} 
-            className="h-full flex flex-col"
+            className="h-full flex flex-col relative overflow-hidden border-0"
           >
-            <CardHeader className="text-center">
+            <div className="absolute top-0 right-0 left-0 h-32 bg-gradient-to-b from-black/30 to-transparent"></div>
+            <CardHeader className="text-center pt-10 relative z-10">
               <div className="text-6xl mb-2">{vibeIcons[profileData.vibe]}</div>
-              <CardTitle className="text-2xl" style={{ color: themeStyles.accent }}>
+              <CardTitle className="text-3xl font-bold" style={{ color: themeStyles.accent }}>
                 {profileData.name || t('profile.namePlaceholder')}
               </CardTitle>
               <div className="mt-2 text-sm opacity-80">
                 {t(`vibe.${profileData.vibe}`)}
               </div>
             </CardHeader>
-            <CardContent className="flex-grow flex flex-col justify-between">
-              <div className="bg-black bg-opacity-20 p-4 rounded-lg my-4" dir={dir}>
-                {profileData.bio || t('profile.bioPlaceholder')}
+            <CardContent className="flex-grow flex flex-col justify-between p-6">
+              <div 
+                className="bg-black/20 backdrop-blur-sm p-6 rounded-lg my-4 border border-opacity-20"
+                style={{ borderColor: themeStyles.accent }} 
+                dir={dir}
+              >
+                <div 
+                  className="text-lg font-medium mb-2 flex items-center gap-2"
+                  style={{ color: themeStyles.accent }}
+                >
+                  <Palette className="h-4 w-4" />
+                  {t('profile.bio')}
+                </div>
+                <p className="text-base leading-relaxed">
+                  {profileData.bio || t('profile.bioPlaceholder')}
+                </p>
               </div>
               
-              <div className="mt-auto text-sm opacity-70 text-center pt-4">
-                @{user?.email?.split('@')[0] || 'username'} · {new Date().toLocaleDateString()}
+              <div className="mt-auto text-sm text-center pt-4 opacity-70 flex flex-col gap-1">
+                <div 
+                  className="backdrop-blur-sm py-2 px-4 rounded-full mx-auto inline-block"
+                  style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}
+                >
+                  @{user?.email?.split('@')[0] || 'username'}
+                </div>
+                <div>{new Date().toLocaleDateString(language === 'ar' ? 'ar-EG' : undefined)}</div>
               </div>
             </CardContent>
           </Card>

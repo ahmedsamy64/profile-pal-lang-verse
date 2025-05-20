@@ -21,22 +21,29 @@ const App = () => (
       <BrowserRouter>
         <LanguageProvider>
           <AuthProvider>
-            <Navbar />
-            <main className="min-h-screen">
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/login" element={<Login />} />
-                <Route 
-                  path="/my-profile" 
-                  element={
-                    <ProtectedRoute>
-                      <Profile />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </main>
+            <div className="flex flex-col min-h-screen bg-background">
+              <Navbar />
+              <main className="flex-1 py-4">
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route 
+                    path="/my-profile" 
+                    element={
+                      <ProtectedRoute>
+                        <Profile />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </main>
+              <footer className="py-6 border-t border-border/30 bg-muted/20">
+                <div className="container text-center text-sm text-muted-foreground">
+                  &copy; {new Date().getFullYear()} Profile Customizer. All rights reserved.
+                </div>
+              </footer>
+            </div>
             <Toaster />
             <Sonner />
           </AuthProvider>
