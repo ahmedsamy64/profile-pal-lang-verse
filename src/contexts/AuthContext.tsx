@@ -38,6 +38,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             title: "Logged out",
             description: "You have been successfully logged out.",
           });
+        } else if (event === 'SIGNED_UP') {
+          toast({
+            title: "Registration successful",
+            description: "Your account has been created.",
+          });
         }
       }
     );

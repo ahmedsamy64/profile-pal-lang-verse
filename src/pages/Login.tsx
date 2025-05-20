@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,7 +19,7 @@ const Login = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   
   const { login } = useAuth();
-  const { t, dir } = useLanguage();
+  const { t, dir, language } = useLanguage();
   const navigate = useNavigate();
   
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,7 +27,20 @@ const Login = () => {
     setError('');
     
     if (!email || !password) {
-      setError(t('error.required'));
+      setError(getText('error.required'));
+      return;
+    }
+    
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError(getText('error.invalidEmail'));
+      return;
+    }
+    
+    // Password validation - at least 6 characters
+    if (password.length < 6) {
+      setError(getText('error.passwordLength'));
       return;
     }
     
@@ -38,28 +52,22 @@ const Login = () => {
         const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            // Use emailRedirect if you have a specific redirect URL
+            // emailRedirect: 'https://yourdomain.com/auth/callback'
+          }
         });
         
         if (signUpError) {
           throw signUpError;
         }
         
-        // If signup successful, automatically log them in
-        const { data: { session }, error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        });
-        
-        if (signInError) {
-          throw signInError;
-        }
-        
-        if (session) {
-          navigate('/my-profile');
-        }
+        // On successful signup
+        setError('');
+        navigate('/my-profile');
       } else {
         // Handle sign in with Supabase
-        const { data: { session }, error: signInError } = await supabase.auth.signInWithPassword({
+        const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password
         });
@@ -68,13 +76,25 @@ const Login = () => {
           throw signInError;
         }
         
-        if (session) {
-          navigate('/my-profile');
-        }
+        // On successful login
+        setError('');
+        navigate('/my-profile');
       }
     } catch (err: any) {
       console.error('Auth error:', err);
-      setError(err.message || t('error.login'));
+      
+      // Provide more user-friendly error messages
+      if (err.message.includes('Email address') && err.message.includes('is invalid')) {
+        setError(getText('error.invalidEmailDomain'));
+      } else if (err.message.includes('Password should be at least')) {
+        setError(getText('error.passwordLength'));
+      } else if (err.message.includes('Invalid login credentials')) {
+        setError(getText('error.invalidCredentials'));
+      } else if (err.message.includes('User already registered')) {
+        setError(getText('error.userExists'));
+      } else {
+        setError(err.message || getText('error.login'));
+      }
     } finally {
       setIsLoading(false);
     }
@@ -115,6 +135,16 @@ const Login = () => {
         return language === 'ar' ? 'كلمة المرور' : 'Password';
       case 'error.required':
         return language === 'ar' ? 'جميع الحقول مطلوبة' : 'All fields are required';
+      case 'error.invalidEmail':
+        return language === 'ar' ? 'يرجى إدخال عنوان بريد إلكتروني صالح' : 'Please enter a valid email address';
+      case 'error.invalidEmailDomain':
+        return language === 'ar' ? 'نطاق البريد الإلكتروني غير صالح. يرجى استخدام بريد إلكتروني مختلف' : 'Email domain is not accepted. Please use a different email address';
+      case 'error.passwordLength':
+        return language === 'ar' ? 'يجب أن تكون كلمة المرور 6 أحرف على الأقل' : 'Password must be at least 6 characters';
+      case 'error.invalidCredentials':
+        return language === 'ar' ? 'بيانات الاعتماد غير صالحة' : 'Invalid login credentials';
+      case 'error.userExists':
+        return language === 'ar' ? 'المستخدم مسجل بالفعل' : 'User already registered';
       case 'error.login':
         return language === 'ar' ? 'خطأ في تسجيل الدخول' : 'Login error';
       case 'common.loading':
@@ -123,9 +153,6 @@ const Login = () => {
         return key;
     }
   };
-  
-  // Extract language from context to use in the fallback function
-  const { language } = useLanguage();
   
   // Access translations directly to check if keys exist
   const translations: Record<string, Record<string, string>> = {
@@ -141,6 +168,11 @@ const Login = () => {
       'signup.haveAccount': 'Already have an account? Log in',
       'error.required': 'All fields are required',
       'error.login': 'Login error',
+      'error.invalidEmail': 'Please enter a valid email address',
+      'error.invalidEmailDomain': 'Email domain is not accepted. Please use a different email address',
+      'error.passwordLength': 'Password must be at least 6 characters',
+      'error.invalidCredentials': 'Invalid login credentials',
+      'error.userExists': 'User already registered',
       'common.loading': 'Loading...',
     },
     ar: {
@@ -155,6 +187,11 @@ const Login = () => {
       'signup.haveAccount': 'لديك حساب بالفعل؟ تسجيل الدخول',
       'error.required': 'جميع الحقول مطلوبة',
       'error.login': 'خطأ في تسجيل الدخول',
+      'error.invalidEmail': 'يرجى إدخال عنوان بريد إلكتروني صالح',
+      'error.invalidEmailDomain': 'نطاق البريد الإلكتروني غير صالح. يرجى استخدام بريد إلكتروني مختلف',
+      'error.passwordLength': 'يجب أن تكون كلمة المرور 6 أحرف على الأقل',
+      'error.invalidCredentials': 'بيانات الاعتماد غير صالحة',
+      'error.userExists': 'المستخدم مسجل بالفعل',
       'common.loading': 'جاري التحميل...',
     }
   };
