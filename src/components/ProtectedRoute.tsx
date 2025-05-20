@@ -1,9 +1,10 @@
 
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from '@/components/ui/use-toast';
 import { Skeleton } from "@/components/ui/skeleton";
+import { useEffect, useState } from 'react';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -12,6 +13,21 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { isAuthenticated, isLoading } = useAuth();
   const { t } = useLanguage();
+  const location = useLocation();
+  const [shouldRedirect, setShouldRedirect] = useState(false);
+  
+  // Delayed check for authentication to allow auth state to stabilize
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      // Only show toast and redirect if we're not in a loading state
+      toast({
+        title: t("login.required"),
+        description: t("login.pleaseLogin"),
+        variant: "destructive",
+      });
+      setShouldRedirect(true);
+    }
+  }, [isLoading, isAuthenticated, t]);
   
   // Show loading state while checking authentication
   if (isLoading) {
@@ -23,15 +39,12 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
   
-  if (!isAuthenticated) {
-    toast({
-      title: t("login.required"),
-      description: t("login.pleaseLogin"),
-      variant: "destructive",
-    });
-    return <Navigate to="/login" replace />;
+  if (shouldRedirect) {
+    // Redirect to login with the intended destination
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
   
+  // If authenticated or waiting for auth to stabilize, show content
   return <>{children}</>;
 };
 

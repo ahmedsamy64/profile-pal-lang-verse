@@ -118,20 +118,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (data.user) {
         if (!data.session) {
           // Email verification is required, but we'll still navigate to profile
-          // and notify the user about verification
           toast({
             title: "Account created",
             description: "Please verify your email to access all features.",
           });
         } else {
+          // If we have a session, set it immediately to avoid auth issues
+          setUser(data.user);
+          setSession(data.session);
+          
           toast({
             title: "Signup successful",
             description: "Your account has been created.",
           });
         }
         
-        // Always navigate to profile, regardless of verification status
-        navigate('/my-profile');
+        // Force a small delay to ensure auth state is updated before navigation
+        setTimeout(() => {
+          navigate('/my-profile');
+        }, 100);
+        
         return { success: true };
       }
       

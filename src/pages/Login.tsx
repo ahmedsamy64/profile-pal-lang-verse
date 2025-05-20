@@ -1,5 +1,6 @@
+
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
@@ -19,13 +20,17 @@ const Login = () => {
   const { login, signup, isAuthenticated, isLoading: authLoading } = useAuth();
   const { t, dir, language } = useLanguage();
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Get the intended destination from location state, or default to '/my-profile'
+  const from = location.state?.from || '/my-profile';
   
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated && !authLoading) {
-      navigate('/my-profile');
+      navigate(from);
     }
-  }, [isAuthenticated, authLoading, navigate]);
+  }, [isAuthenticated, authLoading, navigate, from]);
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,7 +74,7 @@ const Login = () => {
         
         // On successful login
         setError('');
-        navigate('/my-profile');
+        // Navigate is handled by the useEffect above
       }
     } catch (err: any) {
       console.error('Auth error:', err);
