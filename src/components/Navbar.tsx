@@ -57,7 +57,11 @@ const Navbar = () => {
                   {user?.email || t('nav.profile')}
                 </Link>
               </Button>
-              <Button variant="outline" onClick={handleLogout}>
+              <Button 
+                variant="outline" 
+                onClick={handleLogout} 
+                disabled={isLoading}
+              >
                 <LogOut className="h-4 w-4 mr-2" />
                 {t('nav.logout')}
               </Button>

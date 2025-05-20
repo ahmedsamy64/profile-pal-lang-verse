@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         console.log("Auth state changed:", event, session?.user?.email);
         
         setSession(session);
@@ -68,10 +68,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             description: "You have been successfully logged out.",
           });
           navigate('/');
-        } else if (event === 'USER_UPDATED' || event === 'SIGNED_UP') {
+        } else if (event === 'USER_UPDATED' || event === 'TOKEN_REFRESHED') {
           toast({
-            title: "Registration successful",
-            description: "Your account has been created.",
+            title: "Account updated",
+            description: "Your account has been updated.",
           });
         }
       }
@@ -123,8 +123,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
   const logout = async (): Promise<void> => {
     try {
+      setIsLoading(true);
       console.log("Attempting to logout...");
-      const { error } = await supabase.auth.signOut();
+      
+      // Force signOut with scope: 'global' to clear all sessions
+      const { error } = await supabase.auth.signOut({ scope: 'global' });
       
       if (error) {
         console.error('Logout error:', error);
@@ -133,11 +136,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           description: "There was an issue logging out. Please try again.",
           variant: "destructive"
         });
-        return;
+      } else {
+        // Manually clear session state immediately
+        setSession(null);
+        setUser(null);
+        
+        toast({
+          title: "Logged out",
+          description: "You have been successfully logged out.",
+        });
+        
+        // Navigate regardless of onAuthStateChange (as a fallback)
+        navigate('/');
       }
-      
-      // The navigation and toast will be handled by the onAuthStateChange listener
-      console.log("Logout successful, waiting for auth state change...");
     } catch (error) {
       console.error('Unexpected logout error:', error);
       toast({
@@ -145,6 +156,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         description: "There was an unexpected issue logging out. Please try again.",
         variant: "destructive"
       });
+    } finally {
+      setIsLoading(false);
     }
   };
   
