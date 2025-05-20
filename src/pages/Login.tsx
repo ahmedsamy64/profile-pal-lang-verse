@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -31,9 +30,8 @@ const Login = () => {
       return;
     }
     
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    // Email validation - simple check for @ symbol
+    if (!email.includes('@')) {
       setError(getText('error.invalidEmail'));
       return;
     }
@@ -48,14 +46,10 @@ const Login = () => {
     
     try {
       if (isSignUp) {
-        // Handle sign up with Supabase
+        // Sign up with Supabase - no domain restrictions
         const { error: signUpError } = await supabase.auth.signUp({
           email,
-          password,
-          options: {
-            // Use emailRedirect if you have a specific redirect URL
-            // emailRedirect: 'https://yourdomain.com/auth/callback'
-          }
+          password
         });
         
         if (signUpError) {
@@ -67,13 +61,10 @@ const Login = () => {
         navigate('/my-profile');
       } else {
         // Handle sign in with Supabase
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        });
+        const success = await login(email, password);
         
-        if (signInError) {
-          throw signInError;
+        if (!success) {
+          throw new Error(getText('error.invalidCredentials'));
         }
         
         // On successful login
@@ -85,7 +76,8 @@ const Login = () => {
       
       // Provide more user-friendly error messages
       if (err.message.includes('Email address') && err.message.includes('is invalid')) {
-        setError(getText('error.invalidEmailDomain'));
+        // Don't set invalidEmailDomain error, use a more generic message
+        setError(getText('error.invalidEmail'));
       } else if (err.message.includes('Password should be at least')) {
         setError(getText('error.passwordLength'));
       } else if (err.message.includes('Invalid login credentials')) {
