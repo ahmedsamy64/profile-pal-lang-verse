@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -113,18 +114,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { success: false, error: error.message };
       }
       
-      // Success - always navigate to profile page if user signed up successfully
+      // Success - Navigate to profile page if user signed up successfully
       if (data.user) {
         toast({
           title: "Signup successful",
           description: "Your account has been created.",
         });
         
-        // Always redirect to profile page
-        navigate('/my-profile');
-        
-        // Show a toast about email verification if needed
-        if (!data.session) {
+        // Check if email confirmation is required
+        if (data.session) {
+          // User is already signed in, redirect to profile
+          navigate('/my-profile');
+        } else {
+          // Email confirmation required
           toast({
             title: "Verification required",
             description: "Please check your email to verify your account.",
