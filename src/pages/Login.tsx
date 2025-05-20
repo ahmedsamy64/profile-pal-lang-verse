@@ -9,12 +9,14 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { supabase } from '@/integrations/supabase/client';
 
 const Login = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
   
   const { login } = useAuth();
   const { t, dir } = useLanguage();
@@ -24,7 +26,7 @@ const Login = () => {
     e.preventDefault();
     setError('');
     
-    if (!username || !password) {
+    if (!email || !password) {
       setError(t('error.required'));
       return;
     }
@@ -32,28 +34,65 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      const success = await login(username, password);
-      
-      if (success) {
-        navigate('/my-profile');
+      if (isSignUp) {
+        // Handle sign up with Supabase
+        const { error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+        });
+        
+        if (signUpError) {
+          throw signUpError;
+        }
+        
+        // If signup successful, automatically log them in
+        const { data: { session }, error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+        
+        if (signInError) {
+          throw signInError;
+        }
+        
+        if (session) {
+          navigate('/my-profile');
+        }
       } else {
-        setError(t('error.login'));
+        // Handle sign in with Supabase
+        const { data: { session }, error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+        
+        if (signInError) {
+          throw signInError;
+        }
+        
+        if (session) {
+          navigate('/my-profile');
+        }
       }
-    } catch (err) {
-      console.error('Login error:', err);
-      setError(t('error.login'));
+    } catch (err: any) {
+      console.error('Auth error:', err);
+      setError(err.message || t('error.login'));
     } finally {
       setIsLoading(false);
     }
+  };
+  
+  const toggleAuthMode = () => {
+    setIsSignUp(!isSignUp);
+    setError('');
   };
   
   return (
     <div className="container flex items-center justify-center min-h-[80vh]" dir={dir}>
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>{t('login.title')}</CardTitle>
+          <CardTitle>{isSignUp ? t('signup.title') : t('login.title')}</CardTitle>
           <CardDescription>
-            {t('login.noAccount')} {t('login.createAccount')}
+            {isSignUp ? t('signup.description') : t('login.description')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -66,11 +105,12 @@ const Login = () => {
             )}
             
             <div className="space-y-2">
-              <Label htmlFor="username">{t('login.username')}</Label>
+              <Label htmlFor="email">{t('login.email')}</Label>
               <Input
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
@@ -87,10 +127,19 @@ const Login = () => {
             </div>
             
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Loading...' : t('login.submit')}
+              {isLoading 
+                ? t('common.loading') 
+                : isSignUp 
+                  ? t('signup.submit') 
+                  : t('login.submit')}
             </Button>
           </form>
         </CardContent>
+        <CardFooter className="flex justify-center">
+          <Button variant="link" onClick={toggleAuthMode}>
+            {isSignUp ? t('signup.haveAccount') : t('login.noAccount')}
+          </Button>
+        </CardFooter>
       </Card>
     </div>
   );
