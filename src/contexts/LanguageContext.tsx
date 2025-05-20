@@ -29,6 +29,9 @@ const enTranslations: Record<string, string> = {
   "home.feature1": "Multiple themes and color schemes",
   "home.feature2": "Personalized profile creation",
   "home.feature3": "Full multilingual support",
+  "home.featureDesc1": "Customize your profile with different themes and color schemes that match your personality.",
+  "home.featureDesc2": "Create a personalized profile that represents who you are and what you love.",
+  "home.featureDesc3": "Use the app in your preferred language with complete RTL support for Arabic.",
   
   // Login Page
   "login.title": "Login to your account",
@@ -72,11 +75,24 @@ const enTranslations: Record<string, string> = {
   
   // Common
   "common.loading": "Loading...",
+  "common.saving": "Saving...",
   
   // Errors
   "error.login": "Invalid username or password",
   "error.required": "This field is required",
   "error.save": "Failed to save profile",
+  "error.auth": "Authentication Error",
+  "error.loginRequired": "You must be logged in to access this page",
+  "error.invalidEmail": "Please enter a valid email address",
+  "error.passwordLength": "Password must be at least 6 characters",
+  "error.invalidCredentials": "Invalid login credentials",
+  "error.userExists": "User already registered",
+  "error.signup": "Failed to sign up. Please try again.",
+  "error.emailNotConfirmed": "Email not confirmed, but you can still use the app",
+  "error.invalidEmailDomain": "Email domain is not allowed",
+  "error.serverError": "Server error. Please try again later",
+  "error.networkError": "Network error. Please check your connection",
+  "error.unknownError": "An unknown error occurred",
 };
 
 // Arabic translations
@@ -99,6 +115,9 @@ const arTranslations: Record<string, string> = {
   "home.feature1": "سمات وألوان متعددة",
   "home.feature2": "إنشاء ملف شخصي مخصص",
   "home.feature3": "دعم كامل للغات المتعددة",
+  "home.featureDesc1": "خصص ملفك الشخصي بسمات وألوان مختلفة تناسب شخصيتك.",
+  "home.featureDesc2": "أنشئ ملفًا شخصيًا يعبر عنك وعما تحب.",
+  "home.featureDesc3": "استخدم التطبيق باللغة المفضلة لديك مع دعم كامل للغة العربية.",
   
   // Login Page
   "login.title": "تسجيل الدخول إلى حسابك",
@@ -142,11 +161,24 @@ const arTranslations: Record<string, string> = {
   
   // Common
   "common.loading": "جاري التحميل...",
+  "common.saving": "جاري الحفظ...",
   
   // Errors
   "error.login": "اسم المستخدم أو كلمة المرور غير صحيحة",
   "error.required": "هذا الحقل مطلوب",
   "error.save": "فشل في حفظ الملف الشخصي",
+  "error.auth": "خطأ في المصادقة",
+  "error.loginRequired": "يجب تسجيل الدخول للوصول إلى هذه الصفحة",
+  "error.invalidEmail": "يرجى إدخال عنوان بريد إلكتروني صالح",
+  "error.passwordLength": "يجب أن تكون كلمة المرور 6 أحرف على الأقل",
+  "error.invalidCredentials": "بيانات تسجيل الدخول غير صالحة",
+  "error.userExists": "المستخدم مسجل بالفعل",
+  "error.signup": "فشل في التسجيل. يرجى المحاولة مرة أخرى.",
+  "error.emailNotConfirmed": "لم يتم تأكيد البريد الإلكتروني، ولكن يمكنك استخدام التطبيق",
+  "error.invalidEmailDomain": "نطاق البريد الإلكتروني غير مسموح به",
+  "error.serverError": "خطأ في الخادم. يرجى المحاولة مرة أخرى لاحقًا",
+  "error.networkError": "خطأ في الشبكة. يرجى التحقق من اتصالك",
+  "error.unknownError": "حدث خطأ غير معروف",
 };
 
 const translations: Record<Language, Record<string, string>> = {

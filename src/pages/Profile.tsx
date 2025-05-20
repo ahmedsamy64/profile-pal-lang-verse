@@ -199,6 +199,7 @@ const Profile = () => {
                     onChange={handleInputChange}
                     placeholder={t('profile.namePlaceholder')}
                     required
+                    dir={dir}
                   />
                 </div>
                 
@@ -208,10 +209,10 @@ const Profile = () => {
                     value={profileData.vibe}
                     onValueChange={(value) => handleSelectChange('vibe', value)}
                   >
-                    <SelectTrigger id="vibe">
+                    <SelectTrigger id="vibe" dir={dir}>
                       <SelectValue placeholder={t('profile.vibe')} />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent dir={dir}>
                       <SelectItem value="techie">{t('profile.vibeTechie')}</SelectItem>
                       <SelectItem value="artist">{t('profile.vibeArtist')}</SelectItem>
                       <SelectItem value="explorer">{t('profile.vibeExplorer')}</SelectItem>
@@ -225,10 +226,10 @@ const Profile = () => {
                     value={profileData.colorScheme}
                     onValueChange={(value) => handleSelectChange('colorScheme', value)}
                   >
-                    <SelectTrigger id="colorScheme">
+                    <SelectTrigger id="colorScheme" dir={dir}>
                       <SelectValue placeholder={t('profile.colorScheme')} />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent dir={dir}>
                       <SelectItem value="neonSunset">{t('profile.colorNeonSunset')}</SelectItem>
                       <SelectItem value="forestGreens">{t('profile.colorForestGreens')}</SelectItem>
                       <SelectItem value="oceanBlues">{t('profile.colorOceanBlues')}</SelectItem>
@@ -245,11 +246,12 @@ const Profile = () => {
                     onChange={handleInputChange}
                     placeholder={t('profile.bioPlaceholder')}
                     rows={4}
+                    dir={dir}
                   />
                 </div>
                 
                 <Button type="submit" disabled={isLoading} className="w-full">
-                  {isLoading ? t('common.saving') : t('profile.save')}
+                  {isLoading ? t('common.loading') : t('profile.save')}
                 </Button>
               </form>
             </CardContent>
@@ -277,7 +279,7 @@ const Profile = () => {
               </div>
             </CardHeader>
             <CardContent className="flex-grow flex flex-col justify-between">
-              <div className="bg-black bg-opacity-20 p-4 rounded-lg my-4">
+              <div className="bg-black bg-opacity-20 p-4 rounded-lg my-4" dir={dir}>
                 {profileData.bio || t('profile.bioPlaceholder')}
               </div>
               
