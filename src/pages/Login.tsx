@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -86,13 +85,87 @@ const Login = () => {
     setError('');
   };
   
+  // Check if the translation key exists in the language context
+  const getText = (key: string): string => {
+    // If the translation is available, use it
+    if (translations[language][key]) {
+      return t(key);
+    }
+    // Otherwise provide fallback text
+    switch (key) {
+      case 'signup.title':
+        return language === 'ar' ? 'إنشاء حساب جديد' : 'Create New Account';
+      case 'signup.description':
+        return language === 'ar' ? 'سجل للحصول على حساب جديد' : 'Register for a new account';
+      case 'signup.submit':
+        return language === 'ar' ? 'إنشاء حساب' : 'Sign Up';
+      case 'signup.haveAccount':
+        return language === 'ar' ? 'لديك حساب بالفعل؟ تسجيل الدخول' : 'Already have an account? Log in';
+      case 'login.title':
+        return language === 'ar' ? 'تسجيل الدخول' : 'Login';
+      case 'login.description':
+        return language === 'ar' ? 'قم بتسجيل الدخول إلى حسابك' : 'Sign in to your account';
+      case 'login.submit':
+        return language === 'ar' ? 'تسجيل الدخول' : 'Login';
+      case 'login.noAccount':
+        return language === 'ar' ? 'ليس لديك حساب؟ اشترك' : "Don't have an account? Sign up";
+      case 'login.email':
+        return language === 'ar' ? 'البريد الإلكتروني' : 'Email';
+      case 'login.password':
+        return language === 'ar' ? 'كلمة المرور' : 'Password';
+      case 'error.required':
+        return language === 'ar' ? 'جميع الحقول مطلوبة' : 'All fields are required';
+      case 'error.login':
+        return language === 'ar' ? 'خطأ في تسجيل الدخول' : 'Login error';
+      case 'common.loading':
+        return language === 'ar' ? 'جاري التحميل...' : 'Loading...';
+      default:
+        return key;
+    }
+  };
+  
+  // Extract language from context to use in the fallback function
+  const { language } = useLanguage();
+  
+  // Access translations directly to check if keys exist
+  const translations: Record<string, Record<string, string>> = {
+    en: {
+      'login.title': 'Login to your account',
+      'login.email': 'Email',
+      'login.password': 'Password',
+      'login.submit': 'Login',
+      'login.noAccount': "Don't have an account?",
+      'signup.title': 'Create New Account',
+      'signup.description': 'Register for a new account',
+      'signup.submit': 'Sign Up',
+      'signup.haveAccount': 'Already have an account? Log in',
+      'error.required': 'All fields are required',
+      'error.login': 'Login error',
+      'common.loading': 'Loading...',
+    },
+    ar: {
+      'login.title': 'تسجيل الدخول إلى حسابك',
+      'login.email': 'البريد الإلكتروني',
+      'login.password': 'كلمة المرور',
+      'login.submit': 'تسجيل الدخول',
+      'login.noAccount': 'ليس لديك حساب؟',
+      'signup.title': 'إنشاء حساب جديد',
+      'signup.description': 'سجل للحصول على حساب جديد',
+      'signup.submit': 'إنشاء حساب',
+      'signup.haveAccount': 'لديك حساب بالفعل؟ تسجيل الدخول',
+      'error.required': 'جميع الحقول مطلوبة',
+      'error.login': 'خطأ في تسجيل الدخول',
+      'common.loading': 'جاري التحميل...',
+    }
+  };
+  
   return (
     <div className="container flex items-center justify-center min-h-[80vh]" dir={dir}>
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>{isSignUp ? t('signup.title') : t('login.title')}</CardTitle>
+          <CardTitle>{isSignUp ? getText('signup.title') : getText('login.title')}</CardTitle>
           <CardDescription>
-            {isSignUp ? t('signup.description') : t('login.description')}
+            {isSignUp ? getText('signup.description') : getText('login.description')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -105,7 +178,7 @@ const Login = () => {
             )}
             
             <div className="space-y-2">
-              <Label htmlFor="email">{t('login.email')}</Label>
+              <Label htmlFor="email">{getText('login.email')}</Label>
               <Input
                 id="email"
                 type="email"
@@ -116,7 +189,7 @@ const Login = () => {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="password">{t('login.password')}</Label>
+              <Label htmlFor="password">{getText('login.password')}</Label>
               <Input
                 id="password"
                 type="password"
@@ -128,16 +201,16 @@ const Login = () => {
             
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading 
-                ? t('common.loading') 
+                ? getText('common.loading') 
                 : isSignUp 
-                  ? t('signup.submit') 
-                  : t('login.submit')}
+                  ? getText('signup.submit') 
+                  : getText('login.submit')}
             </Button>
           </form>
         </CardContent>
         <CardFooter className="flex justify-center">
           <Button variant="link" onClick={toggleAuthMode}>
-            {isSignUp ? t('signup.haveAccount') : t('login.noAccount')}
+            {isSignUp ? getText('signup.haveAccount') : getText('login.noAccount')}
           </Button>
         </CardFooter>
       </Card>

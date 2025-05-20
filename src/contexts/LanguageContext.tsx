@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 
 type Language = "en" | "ar";
@@ -33,12 +32,21 @@ const enTranslations: Record<string, string> = {
   
   // Login Page
   "login.title": "Login to your account",
-  "login.username": "Username",
+  "login.description": "Sign in to your account",
+  "login.email": "Email",
   "login.password": "Password",
   "login.submit": "Login",
   "login.rememberMe": "Remember me",
   "login.noAccount": "Don't have an account?",
   "login.createAccount": "Create one",
+  "login.required": "Login Required",
+  "login.pleaseLogin": "Please log in to access this page",
+  
+  // Signup Page
+  "signup.title": "Create New Account",
+  "signup.description": "Register for a new account",
+  "signup.submit": "Sign Up",
+  "signup.haveAccount": "Already have an account? Log in",
   
   // Profile Page
   "profile.title": "My Profile",
@@ -61,6 +69,9 @@ const enTranslations: Record<string, string> = {
   "vibe.techie": "Innovating the future with code",
   "vibe.artist": "Creating beauty in every stroke",
   "vibe.explorer": "Discovering new horizons",
+  
+  // Common
+  "common.loading": "Loading...",
   
   // Errors
   "error.login": "Invalid username or password",
@@ -91,12 +102,21 @@ const arTranslations: Record<string, string> = {
   
   // Login Page
   "login.title": "تسجيل الدخول إلى حسابك",
-  "login.username": "اسم المستخدم",
+  "login.description": "قم بتسجيل الدخول إلى حسابك",
+  "login.email": "البريد الإلكتروني",
   "login.password": "كلمة المرور",
   "login.submit": "تسجيل الدخول",
   "login.rememberMe": "تذكرني",
   "login.noAccount": "ليس لديك حساب؟",
   "login.createAccount": "إنشاء حساب",
+  "login.required": "تسجيل الدخول مطلوب",
+  "login.pleaseLogin": "يرجى تسجيل الدخول للوصول إلى هذه الصفحة",
+  
+  // Signup Page
+  "signup.title": "إنشاء حساب جديد",
+  "signup.description": "سجل للحصول على حساب جديد",
+  "signup.submit": "إنشاء حساب",
+  "signup.haveAccount": "لديك حساب بالفعل؟ تسجيل الدخول",
   
   // Profile Page
   "profile.title": "ملفي الشخصي",
@@ -119,6 +139,9 @@ const arTranslations: Record<string, string> = {
   "vibe.techie": "ابتكار المستقبل بالبرمجة",
   "vibe.artist": "إبداع الجمال في كل لمسة",
   "vibe.explorer": "اكتشاف آفاق جديدة",
+  
+  // Common
+  "common.loading": "جاري التحميل...",
   
   // Errors
   "error.login": "اسم المستخدم أو كلمة المرور غير صحيحة",
