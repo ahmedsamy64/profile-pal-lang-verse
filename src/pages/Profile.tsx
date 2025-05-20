@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 type VibeType = 'techie' | 'artist' | 'explorer';
 type ColorSchemeType = 'neonSunset' | 'forestGreens' | 'oceanBlues';
@@ -26,30 +27,16 @@ interface ProfileData {
   bio: string;
 }
 
+interface ThemeStyles {
+  backgroundColor: string;
+  color: string;
+  accent: string;
+}
+
 const vibeIcons: Record<VibeType, string> = {
   techie: '💻',
   artist: '🎨',
   explorer: '🧭',
-};
-
-// Mock API function - would connect to a real backend in production
-const saveProfileToAPI = async (data: ProfileData): Promise<boolean> => {
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 800));
-  
-  // Save to localStorage for this example
-  localStorage.setItem('profileData', JSON.stringify(data));
-  
-  return true;
-};
-
-// Mock API function to get profile data
-const getProfileFromAPI = async (): Promise<ProfileData | null> => {
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 300));
-  
-  const data = localStorage.getItem('profileData');
-  return data ? JSON.parse(data) : null;
 };
 
 const Profile = () => {
@@ -64,21 +51,42 @@ const Profile = () => {
     bio: '',
   });
   
-  // Load profile data on component mount
+  // Load profile data from Supabase on component mount
   useEffect(() => {
+    if (!user) return;
+    
     const loadProfileData = async () => {
+      setIsLoading(true);
       try {
-        const data = await getProfileFromAPI();
+        // Fetch profile data from Supabase
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('name, vibe, color_scheme, bio')
+          .eq('id', user.id)
+          .single();
+        
+        if (error) {
+          console.error('Error fetching profile:', error);
+          return;
+        }
+        
         if (data) {
-          setProfileData(data);
+          setProfileData({
+            name: data.name || '',
+            vibe: (data.vibe as VibeType) || 'techie',
+            colorScheme: (data.color_scheme as ColorSchemeType) || 'neonSunset',
+            bio: data.bio || '',
+          });
         }
       } catch (error) {
         console.error('Failed to load profile data', error);
+      } finally {
+        setIsLoading(false);
       }
     };
     
     loadProfileData();
-  }, []);
+  }, [user]);
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -91,17 +99,37 @@ const Profile = () => {
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!user) {
+      toast({
+        title: t('error.auth'),
+        description: t('error.loginRequired'),
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
-      const success = await saveProfileToAPI(profileData);
-      
-      if (success) {
-        toast({
-          title: t('profile.updated'),
-          description: new Date().toLocaleTimeString(),
+      // Save to Supabase
+      const { error } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          name: profileData.name,
+          vibe: profileData.vibe,
+          color_scheme: profileData.colorScheme,
+          bio: profileData.bio,
+          updated_at: new Date().toISOString(),
         });
-      }
+        
+      if (error) throw error;
+      
+      toast({
+        title: t('profile.updated'),
+        description: new Date().toLocaleTimeString(),
+      });
     } catch (error) {
       console.error('Failed to save profile', error);
       toast({
@@ -114,8 +142,12 @@ const Profile = () => {
   };
   
   // Determine styles based on selected vibe and color scheme
-  const getThemeStyles = () => {
-    let styles = {};
+  const getThemeStyles = (): ThemeStyles => {
+    let styles: ThemeStyles = {
+      backgroundColor: '',
+      color: '',
+      accent: '',
+    };
     
     // Apply color scheme
     switch (profileData.colorScheme) {
@@ -217,7 +249,7 @@ const Profile = () => {
                 </div>
                 
                 <Button type="submit" disabled={isLoading} className="w-full">
-                  {isLoading ? 'Saving...' : t('profile.save')}
+                  {isLoading ? t('common.saving') : t('profile.save')}
                 </Button>
               </form>
             </CardContent>
@@ -228,16 +260,16 @@ const Profile = () => {
         <div>
           <Card 
             style={{ 
-              backgroundColor: themeStyles.backgroundColor as string, 
-              color: themeStyles.color as string,
-              borderColor: themeStyles.accent as string,
+              backgroundColor: themeStyles.backgroundColor, 
+              color: themeStyles.color,
+              borderColor: themeStyles.accent,
               borderWidth: '2px',
             }} 
             className="h-full flex flex-col"
           >
             <CardHeader className="text-center">
               <div className="text-6xl mb-2">{vibeIcons[profileData.vibe]}</div>
-              <CardTitle className="text-2xl" style={{ color: themeStyles.accent as string }}>
+              <CardTitle className="text-2xl" style={{ color: themeStyles.accent }}>
                 {profileData.name || t('profile.namePlaceholder')}
               </CardTitle>
               <div className="mt-2 text-sm opacity-80">
@@ -250,7 +282,7 @@ const Profile = () => {
               </div>
               
               <div className="mt-auto text-sm opacity-70 text-center pt-4">
-                @{user?.username || 'username'} · {new Date().toLocaleDateString()}
+                @{user?.email?.split('@')[0] || 'username'} · {new Date().toLocaleDateString()}
               </div>
             </CardContent>
           </Card>

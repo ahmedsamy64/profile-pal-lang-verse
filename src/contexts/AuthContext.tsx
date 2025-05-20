@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             title: "Logged out",
             description: "You have been successfully logged out.",
           });
-        } else if (event === 'USER_UPDATED' || event === 'SIGNED_UP') {
+        } else if (event === 'USER_UPDATED') {
           toast({
             title: "Registration successful",
             description: "Your account has been created.",
