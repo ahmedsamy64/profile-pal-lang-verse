@@ -8,7 +8,6 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { supabase } from '@/integrations/supabase/client';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -17,7 +16,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   
-  const { login } = useAuth();
+  const { login, signup } = useAuth();
   const { t, dir, language } = useLanguage();
   const navigate = useNavigate();
   
@@ -46,21 +45,18 @@ const Login = () => {
     
     try {
       if (isSignUp) {
-        // Sign up with Supabase - no domain restrictions
-        const { error: signUpError } = await supabase.auth.signUp({
-          email,
-          password
-        });
+        // Handle signup
+        const { success, error: signupError } = await signup(email, password);
         
-        if (signUpError) {
-          throw signUpError;
+        if (!success) {
+          throw new Error(signupError || getText('error.signup'));
         }
         
         // On successful signup
         setError('');
         navigate('/my-profile');
       } else {
-        // Handle sign in with Supabase
+        // Handle sign in
         const success = await login(email, password);
         
         if (!success) {
@@ -74,9 +70,8 @@ const Login = () => {
     } catch (err: any) {
       console.error('Auth error:', err);
       
-      // Provide more user-friendly error messages
+      // Provide user-friendly error messages
       if (err.message.includes('Email address') && err.message.includes('is invalid')) {
-        // Don't set invalidEmailDomain error, use a more generic message
         setError(getText('error.invalidEmail'));
       } else if (err.message.includes('Password should be at least')) {
         setError(getText('error.passwordLength'));
@@ -139,6 +134,8 @@ const Login = () => {
         return language === 'ar' ? 'المستخدم مسجل بالفعل' : 'User already registered';
       case 'error.login':
         return language === 'ar' ? 'خطأ في تسجيل الدخول' : 'Login error';
+      case 'error.signup':
+        return language === 'ar' ? 'فشل في التسجيل. يرجى المحاولة مرة أخرى.' : 'Failed to sign up. Please try again.';
       case 'common.loading':
         return language === 'ar' ? 'جاري التحميل...' : 'Loading...';
       default:
@@ -165,6 +162,7 @@ const Login = () => {
       'error.passwordLength': 'Password must be at least 6 characters',
       'error.invalidCredentials': 'Invalid login credentials',
       'error.userExists': 'User already registered',
+      'error.signup': 'Failed to sign up. Please try again.',
       'common.loading': 'Loading...',
     },
     ar: {
@@ -184,6 +182,7 @@ const Login = () => {
       'error.passwordLength': 'يجب أن تكون كلمة المرور 6 أحرف على الأقل',
       'error.invalidCredentials': 'بيانات الاعتماد غير صالحة',
       'error.userExists': 'المستخدم مسجل بالفعل',
+      'error.signup': 'فشل في التسجيل. يرجى المحاولة مرة أخرى.',
       'common.loading': 'جاري التحميل...',
     }
   };

@@ -9,6 +9,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   login: (email: string, password: string) => Promise<boolean>;
+  signup: (email: string, password: string) => Promise<{success: boolean, error?: string}>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -38,7 +39,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             title: "Logged out",
             description: "You have been successfully logged out.",
           });
-        } else if (event === 'USER_UPDATED') {
+        } else if (event === 'USER_UPDATED' || event === 'SIGNED_UP') {
           toast({
             title: "Registration successful",
             description: "Your account has been created.",
@@ -74,6 +75,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
   
+  const signup = async (email: string, password: string): Promise<{success: boolean, error?: string}> => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+      
+      if (error) {
+        console.error('Signup error:', error);
+        return { success: false, error: error.message };
+      }
+      
+      // Success
+      return { success: true };
+    } catch (error: any) {
+      console.error('Signup error:', error);
+      return { success: false, error: error.message };
+    }
+  };
+  
   const logout = async () => {
     try {
       await supabase.auth.signOut();
@@ -93,7 +114,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       value={{ 
         user, 
         session,
-        login, 
+        login,
+        signup,
         logout, 
         isAuthenticated: !!user 
       }}
