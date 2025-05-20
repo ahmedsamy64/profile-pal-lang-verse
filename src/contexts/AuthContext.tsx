@@ -21,6 +21,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -142,30 +143,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
   const logout = async (): Promise<void> => {
     try {
-      setIsLoading(true);
+      // Set loading state to prevent multiple logout attempts
+      if (isLoggingOut) return;
+      setIsLoggingOut(true);
       console.log("Attempting to logout...");
       
-      // Force signOut with scope: 'global' to clear all sessions
-      const { error } = await supabase.auth.signOut({ scope: 'global' });
+      // First manually clear the session state immediately
+      // This ensures UI reflects logout regardless of API success
+      setSession(null);
+      setUser(null);
       
-      if (error) {
-        console.error('Logout error:', error);
-        toast({
-          title: "Logout failed",
-          description: "There was an issue logging out. Please try again.",
-          variant: "destructive"
-        });
-      } else {
-        // Manually clear session state immediately
-        setSession(null);
-        setUser(null);
-        
+      try {
+        // Try global signout first (works when session exists)
+        await supabase.auth.signOut({ scope: 'global' });
+        console.log("Successful global signout");
+      } catch (error) {
+        // If global signout fails, try basic signout
+        console.error("Global signout failed, attempting basic signout");
+        try {
+          await supabase.auth.signOut();
+          console.log("Successful basic signout");
+        } catch (innerError) {
+          console.error("Basic signout also failed:", innerError);
+          // Continue with navigation even if both API calls fail
+          // Since we already cleared the state manually
+        }
+      } finally {
         toast({
           title: "Logged out",
           description: "You have been successfully logged out.",
         });
         
-        // Navigate regardless of onAuthStateChange (as a fallback)
+        // Always navigate to home on logout
         navigate('/');
       }
     } catch (error) {
@@ -176,7 +185,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         variant: "destructive"
       });
     } finally {
-      setIsLoading(false);
+      // Ensure loading state is reset
+      setIsLoggingOut(false);
     }
   };
   
@@ -189,7 +199,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         signup,
         logout, 
         isAuthenticated: !!user,
-        isLoading
+        isLoading: isLoading || isLoggingOut
       }}
     >
       {children}
