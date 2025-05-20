@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -59,9 +60,8 @@ const Login = () => {
           throw new Error(signupError || getText('error.signup'));
         }
         
-        // On successful signup
+        // No need to navigate here as it's handled in the signup function
         setError('');
-        navigate('/my-profile');
       } else {
         // Handle sign in
         const success = await login(email, password);

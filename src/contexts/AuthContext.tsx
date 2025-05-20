@@ -113,7 +113,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { success: false, error: error.message };
       }
       
-      // Success
+      // Success - Navigate to profile page if user signed up successfully
+      if (data.user) {
+        toast({
+          title: "Signup successful",
+          description: "Your account has been created.",
+        });
+        
+        // Check if email confirmation is required
+        if (data.session) {
+          // User is already signed in, redirect to profile
+          navigate('/my-profile');
+        } else {
+          // Email confirmation required
+          toast({
+            title: "Verification required",
+            description: "Please check your email to verify your account.",
+          });
+        }
+      }
+      
       return { success: true };
     } catch (error: any) {
       console.error('Signup error:', error);
