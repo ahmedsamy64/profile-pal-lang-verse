@@ -1,7 +1,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User } from '@supabase/supabase-js';
 
@@ -12,6 +12,7 @@ interface AuthContextType {
   signup: (email: string, password: string) => Promise<{success: boolean, error?: string}>;
   logout: () => void;
   isAuthenticated: boolean;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,15 +20,41 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
   
   useEffect(() => {
+    // First check for existing session
+    const initializeAuth = async () => {
+      setIsLoading(true);
+      try {
+        // Get current session
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          setSession(session);
+          setUser(session.user);
+          console.log("Session found and restored:", session.user.email);
+        } else {
+          console.log("No existing session found");
+        }
+      } catch (error) {
+        console.error("Error loading auth session:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    // Initialize auth
+    initializeAuth();
+    
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log("Auth state changed:", event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
+        setIsLoading(false);
         
         if (event === 'SIGNED_IN') {
           toast({
@@ -39,7 +66,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             title: "Logged out",
             description: "You have been successfully logged out.",
           });
-        } else if (event === 'USER_UPDATED') {
+        } else if (event === 'USER_UPDATED' || event === 'SIGNED_UP') {
           toast({
             title: "Registration successful",
             description: "Your account has been created.",
@@ -47,12 +74,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       }
     );
-    
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-    });
     
     return () => {
       subscription.unsubscribe();
@@ -117,7 +138,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         login,
         signup,
         logout, 
-        isAuthenticated: !!user 
+        isAuthenticated: !!user,
+        isLoading
       }}
     >
       {children}
