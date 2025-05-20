@@ -45,7 +45,7 @@ const Navbar = () => {
               <Button variant="ghost" asChild>
                 <Link to="/my-profile">
                   <User className="h-4 w-4 mr-2" />
-                  {user?.email}
+                  {t('nav.profile')}
                 </Link>
               </Button>
               <Button variant="outline" onClick={logout}>

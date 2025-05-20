@@ -61,17 +61,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             title: "Login successful",
             description: `Welcome back!`,
           });
-          // Redirect to homepage after successful sign-in
-          navigate('/');
         } else if (event === 'SIGNED_OUT') {
           toast({
             title: "Logged out",
             description: "You have been successfully logged out.",
           });
-        } else if (event === 'USER_UPDATED') {
+        } else if (event === 'USER_UPDATED' || event === 'SIGNED_UP') {
           toast({
-            title: "Profile updated",
-            description: "Your account has been updated.",
+            title: "Registration successful",
+            description: "Your account has been created.",
           });
         }
       }
@@ -80,7 +78,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [toast, navigate]);
+  }, [toast]);
   
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
@@ -103,23 +101,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          // Set the redirect URL to the homepage
-          emailRedirectTo: window.location.origin
-        }
       });
       
       if (error) {
         console.error('Signup error:', error);
         return { success: false, error: error.message };
-      }
-      
-      // Show message about verification email if signup was successful
-      if (data && data.user) {
-        toast({
-          title: "Registration successful",
-          description: "Please check your email to verify your account.",
-        });
       }
       
       // Success
